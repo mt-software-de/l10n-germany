@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 05:30+0000\n"
-"PO-Revision-Date: 2026-10-20 05:30+0000\n"
+"POT-Creation-Date: 2026-10-25 07:58+0000\n"
+"PO-Revision-Date: 2026-10-25 07:58+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,207 +16,109 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_all_saints
 msgid "All Saints' Day"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_ascension_day
 msgid "Ascension Day"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_assumption_day
 msgid "Assumption Day"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_boxing_day
 msgid "Boxing Day"
 msgstr ""
 
 #. module: l10n_de_holidays
-#: model_terms:ir.ui.view,arch_db:l10n_de_holidays.calendar_public_holiday_generator_view
-msgid "Cancel"
+#: model:ir.model,name:l10n_de_holidays.model_calendar_public_holiday_template_line
+msgid "Calendar Public Holiday Template Line"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_christmas_day
 msgid "Christmas Day"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_corpus_christi
 msgid "Corpus Christi"
 msgstr ""
 
 #. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__country_id
-msgid "Country"
+#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_template_line__date_type
+msgid "Date Type"
 msgstr ""
 
 #. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__create_uid
-msgid "Created by"
-msgstr ""
-
-#. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__create_date
-msgid "Created on"
-msgstr ""
-
-#. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_german_unity
 msgid "Day of German Unity"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_reformation_day
 msgid "Day of Reformation"
 msgstr ""
 
 #. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__display_name
-msgid "Display Name"
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_repentance_day
+#: model:ir.model.fields.selection,name:l10n_de_holidays.selection__calendar_public_holiday_template_line__date_type__de_repentance_day
+msgid "Day of Repentance and Prayer"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_easter_monday
 msgid "Easter Monday"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_easter_sunday
 msgid "Easter Sunday"
 msgstr ""
 
 #. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__template_id
-msgid "From Template"
+#: model:ir.model.fields,help:l10n_de_holidays.field_calendar_public_holiday_template_line__date_type
+msgid ""
+"Fixed Date: the day and month of the date are used every year.\n"
+"Other values: the date is calculated for every year."
 msgstr ""
 
 #. module: l10n_de_holidays
-#: model_terms:ir.ui.view,arch_db:l10n_de_holidays.calendar_public_holiday_generator_view
-msgid "Generate"
-msgstr ""
-
-#. module: l10n_de_holidays
-#: model:ir.actions.act_window,name:l10n_de_holidays.calendar_public_holiday_generator_action
-#: model:ir.ui.menu,name:l10n_de_holidays.calendar_public_holiday_generator_menu
-#: model_terms:ir.ui.view,arch_db:l10n_de_holidays.calendar_public_holiday_generator_view
-msgid "Generate Public Holidays"
-msgstr ""
-
-#. module: l10n_de_holidays
-#: model:ir.model,name:l10n_de_holidays.model_calendar_public_holiday_generator
-msgid "Generate public holidays - Calculations"
-msgstr ""
-
-#. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_good_friday
 msgid "Good Friday"
 msgstr ""
 
 #. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__id
-msgid "ID"
-msgstr ""
-
-#. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_womens_day
 msgid "International Women's Day"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_workers_day
 msgid "International Workers' Day"
 msgstr ""
 
 #. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__write_uid
-msgid "Last Updated by"
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_new_year
+msgid "New Year's Day"
 msgstr ""
 
 #. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__write_date
-msgid "Last Updated on"
-msgstr ""
-
-#. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
-msgid "New Years's Day"
-msgstr ""
-
-#. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
-msgid "Repentance Day"
-msgstr ""
-
-#. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__state_id
-msgid "State"
-msgstr ""
-
-#. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator.py:0
-msgid ""
-"There is no copy function defined for this county or\n"
-"                    the function name does not fit the requirement -\n"
-"                    action_copy_{country_code}_holidays where \"{country_code}\" id the\n"
-"                    county code."
-msgstr ""
-
-#. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator.py:0
-msgid ""
-"There is no generate function defined for this county\n"
-"                    or the function name does not fit the requirement -\n"
-"                    action_generate_{country_code}_holidays where \"{country_code}\" is\n"
-"                    the county code."
-msgstr ""
-
-#. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_three_kings
 msgid "Three Kings Day"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_whit_monday
 msgid "Whit Monday"
 msgstr ""
 
 #. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
+#: model:calendar.public.holiday.template.line,name:l10n_de_holidays.calendar_public_holiday_template_de_childrens_day
 msgid "World Children's Day"
-msgstr ""
-
-#. module: l10n_de_holidays
-#: model:ir.model.fields,field_description:l10n_de_holidays.field_calendar_public_holiday_generator__year
-msgid "Year"
-msgstr ""
-
-#. module: l10n_de_holidays
-#. odoo-python
-#: code:addons/l10n_de_holidays/wizards/calendar_public_holiday_generator_de.py:0
-msgid "You cannot copy the holidays to the same year."
 msgstr ""

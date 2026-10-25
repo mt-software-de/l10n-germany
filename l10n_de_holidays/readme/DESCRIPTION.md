@@ -1,3 +1,4 @@
-This module provides the calendar.public.holiday.generator wizard and
-implements the functionality needed to generate and copy the public
-holidays in Germany.
+This module provides a public holiday template for Germany, including
+the holidays of the individual states, and adds the calculation of the
+Day of Repentance and Prayer (Buß- und Bettag) to the public holiday
+templates.
