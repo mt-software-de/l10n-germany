@@ -48,11 +48,18 @@
                             widget="many2many_tags"
                             readonly="state != 'draft'"
                         />
+                        <field name="export_attachments" readonly="state != 'draft'" />
                     </group>
                     <group name="result" invisible="state != 'done'">
                         <field name="date_generated" />
                         <field name="file_name" invisible="True" />
                         <field name="file_data" filename="file_name" />
+                        <field name="attachment_file_name" invisible="True" />
+                        <field
+                            name="attachment_file_data"
+                            filename="attachment_file_name"
+                            invisible="not attachment_file_data"
+                        />
                     </group>
                 </sheet>
             </form>

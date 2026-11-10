@@ -2,13 +2,23 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 import base64
 import io
+import os
+import re
 import string
+import uuid
 import zipfile
+
+from lxml import etree
 
 from odoo import _, api, exceptions, fields, models
 from odoo.osv.expression import TRUE_LEAF
 
 from ..datev import DatevAccountWriter, DatevPartnerWriter, DatevTransactionWriter
+
+# the maximum of documents the schema allows in one archive
+DOCUMENT_XML_MAX_DOCUMENTS = 4999
+DOCUMENT_XML_NAMESPACE = "http://xml.datev.de/bedi/tps/document/v05.0"
+XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance"
 
 
 class DatevExportDtvfExport(models.Model):
@@ -37,6 +47,14 @@ class DatevExportDtvfExport(models.Model):
     date_generated = fields.Datetime("Generated at", readonly=True, copy=False)
     file_data = fields.Binary("Data", readonly=True, copy=False)
     file_name = fields.Char("Filename", readonly=True, compute="_compute_file_name")
+    export_attachments = fields.Boolean(
+        help="Link the bookings to the main attachments of their journal entries, "
+        "and generate an additional archive containing those attachments",
+    )
+    attachment_file_data = fields.Binary("Attachments", readonly=True, copy=False)
+    attachment_file_name = fields.Char(
+        "Attachments filename", readonly=True, compute="_compute_file_name"
+    )
     company_id = fields.Many2one(
         "res.company",
         required=True,
@@ -50,13 +68,12 @@ class DatevExportDtvfExport(models.Model):
     @api.depends("name")
     def _compute_file_name(self):
         for this in self:
-            this.file_name = (
-                "".join(
-                    c if c in string.ascii_letters + string.digits + "-_" else "_"
-                    for c in (this.name or "datev_export")
-                )
-                + ".zip"
+            base_name = "".join(
+                c if c in string.ascii_letters + string.digits + "-_" else "_"
+                for c in (this.name or "datev_export")
             )
+            this.file_name = f"{base_name}.zip"
+            this.attachment_file_name = f"{base_name}_attachments.zip"
 
     def action_draft(self):
         return self.filtered(lambda x: x.state != "draft").write({"state": "draft"})
@@ -83,6 +100,7 @@ class DatevExportDtvfExport(models.Model):
             )[:2]
 
             partners = self.env["res.partner"].browse([])
+            exported_moves = self.env["account.move"].browse()
 
             for date_range in this.period_ids:
                 moves = self.env["account.move"].search(
@@ -97,6 +115,7 @@ class DatevExportDtvfExport(models.Model):
                     ],
                     order="date desc",
                 )
+                exported_moves |= moves
                 partners += moves.mapped("line_ids.partner_id") + moves.mapped(
                     "partner_id"
                 )
@@ -158,10 +177,108 @@ class DatevExportDtvfExport(models.Model):
             this.write(
                 {
                     "file_data": base64.b64encode(zip_buffer.getvalue()),
+                    "attachment_file_data": this._get_attachment_file_data(
+                        exported_moves
+                    ),
                     "state": "done",
                     "date_generated": fields.Datetime.now(),
                 }
             )
+
+    def _get_attachment_file_data(self, moves):
+        """Return the archive with the main attachments of the moves, if any"""
+        self.ensure_one()
+        if not self.export_attachments:
+            return False
+        moves = moves.filtered("message_main_attachment_id")
+        if not moves:
+            return False
+        if len(moves) > DOCUMENT_XML_MAX_DOCUMENTS:
+            raise exceptions.UserError(
+                _(
+                    "An archive can contain at most %(maximum)s attachments, "
+                    "please export fewer periods at once.",
+                    maximum=DOCUMENT_XML_MAX_DOCUMENTS,
+                )
+            )
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(
+            zip_buffer, mode="w", compression=zipfile.ZIP_DEFLATED
+        ) as zip_file:
+            for move in moves:
+                zip_file.writestr(
+                    self._get_attachment_filename(move),
+                    move.message_main_attachment_id.raw,
+                )
+            zip_file.writestr("document.xml", self._get_document_xml(moves))
+        return base64.b64encode(zip_buffer.getvalue())
+
+    def _get_attachment_filename(self, move):
+        """Return a name DATEV won't change, it has to match document.xml. The move's
+        id keeps names unique, different journal entry names can clean up the same"""
+        extension = os.path.splitext(move.message_main_attachment_id.name)[1]
+        return re.sub(r"[^A-Za-z0-9_.-]", "_", f"{move.name}_{move.id}{extension}")
+
+    def _get_document_xml(self, moves):
+        """Return the document.xml describing the attachments of the moves"""
+
+        def qualified(namespace, name):
+            return etree.QName(namespace, name).text
+
+        archive = etree.Element(
+            qualified(DOCUMENT_XML_NAMESPACE, "archive"),
+            nsmap={None: DOCUMENT_XML_NAMESPACE, "xsi": XSI_NAMESPACE},
+            attrib={
+                "version": "5.0",
+                "generatingSystem": "Odoo",
+                qualified(XSI_NAMESPACE, "schemaLocation"): (
+                    f"{DOCUMENT_XML_NAMESPACE} document_v050.xsd"
+                ),
+            },
+        )
+        header = etree.SubElement(archive, qualified(DOCUMENT_XML_NAMESPACE, "header"))
+        date = etree.SubElement(header, qualified(DOCUMENT_XML_NAMESPACE, "date"))
+        date.text = fields.Datetime.now().isoformat()
+        client = etree.SubElement(
+            header, qualified(DOCUMENT_XML_NAMESPACE, "clientName")
+        )
+        client.text = self.company_id.name[:36]
+        content = etree.SubElement(
+            archive, qualified(DOCUMENT_XML_NAMESPACE, "content")
+        )
+        for move in moves:
+            attributes = {
+                "guid": self._get_attachment_guid(move),
+                # 1 = relevant for bookings
+                "processID": "1",
+            }
+            # 1 = incoming invoices, 2 = outgoing invoices, others have no type
+            if move.is_purchase_document():
+                attributes["type"] = "1"
+            elif move.is_sale_document():
+                attributes["type"] = "2"
+            document = etree.SubElement(
+                content,
+                qualified(DOCUMENT_XML_NAMESPACE, "document"),
+                attrib=attributes,
+            )
+            etree.SubElement(
+                document,
+                qualified(DOCUMENT_XML_NAMESPACE, "extension"),
+                attrib={
+                    qualified(XSI_NAMESPACE, "type"): "File",
+                    "name": self._get_attachment_filename(move),
+                },
+            )
+        return etree.tostring(archive, xml_declaration=True, encoding="UTF-8")
+
+    def _get_attachment_guid(self, move):
+        """Return an id stable across exports, so that reexporting a move yields the
+        same link between its bookings and its attachment"""
+        database_uuid = (
+            self.env["ir.config_parameter"].sudo().get_param("database.uuid")
+        )
+        return str(uuid.uuid5(uuid.UUID(database_uuid), f"account.move,{move.id}"))
 
     def _get_data_transaction(self, move):
         # split move into single transactions from one account to another
@@ -259,6 +376,8 @@ class DatevExportDtvfExport(models.Model):
                 or move_line2.analytic_line_ids[:1].account_id.name,
                 "KOST-Datum": move.date.strftime("%d%m%Y"),
             }
+            if self.export_attachments and move.message_main_attachment_id:
+                data["Beleglink"] = f'BEDI "{self._get_attachment_guid(move)}"'
             if move_line.amount_currency:
                 factor = abs(amount / (move_line.debit or move_line.credit))
                 rate = 1 / currency._get_conversion_rate(

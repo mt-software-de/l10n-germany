@@ -5,12 +5,18 @@ import datetime
 import io
 import unittest
 import zipfile
+from unittest.mock import patch
 
 from dateutil.relativedelta import relativedelta
+from lxml import etree
 
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests import Form
 from odoo.tests.common import TransactionCase, can_import
+
+from ..models.datev_export_dtvf import DOCUMENT_XML_NAMESPACE
+
+DATEV_EXPORT_MODULE = "odoo.addons.datev_export_dtvf.models.datev_export_dtvf"
 
 
 class TestDatevExportDtvf(TransactionCase):
@@ -120,6 +126,95 @@ class TestDatevExportDtvf(TransactionCase):
             )
         self.wizard.action_draft()
         self.assertEqual(self.wizard.state, "draft")
+
+    def _attach_to_move(self):
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": "invoice.pdf",
+                "raw": b"%PDF-1.4 test",
+                "res_model": "account.move",
+                "res_id": self.move.id,
+            }
+        )
+        self.move.message_main_attachment_id = attachment
+
+    def _get_booking_row(self):
+        zip_buffer = io.BytesIO(base64.b64decode(self.wizard.file_data))
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            file_name = next(
+                f for f in zip_file.namelist() if f.startswith("EXTF_Buchungsstapel")
+            )
+            rows = zip_file.read(file_name).decode("utf8").splitlines()
+        return rows[2]
+
+    def test_attachments(self):
+        """Test the bookings link to the exported attachments by the same id"""
+        self._attach_to_move()
+        self.move.action_post()
+        self.wizard.export_attachments = True
+        self.wizard.journal_ids = self.journal
+        self.wizard.name = "Hello World"
+        self.wizard.action_generate()
+        self.assertEqual(
+            self.wizard.attachment_file_name, "Hello_World_attachments.zip"
+        )
+        guid = self.wizard._get_attachment_guid(self.move)
+        self.assertIn(f'"BEDI ""{guid}"""', self._get_booking_row())
+
+        zip_buffer = io.BytesIO(base64.b64decode(self.wizard.attachment_file_data))
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            file_name = self.wizard._get_attachment_filename(self.move)
+            self.assertEqual(set(zip_file.namelist()), {file_name, "document.xml"})
+            self.assertTrue(file_name.endswith(f"_{self.move.id}.pdf"))
+            self.assertEqual(zip_file.read(file_name), b"%PDF-1.4 test")
+            root = etree.fromstring(zip_file.read("document.xml"))
+        namespaces = {"d": DOCUMENT_XML_NAMESPACE}
+        document = root.find("d:content/d:document", namespaces)
+        self.assertEqual(document.get("guid"), guid)
+        self.assertEqual(document.get("processID"), "1")
+        self.assertIsNone(document.get("type"), "An entry is no invoice")
+        self.assertEqual(
+            document.find("d:extension", namespaces).get("name"), file_name
+        )
+
+    def test_attachments_document_type(self):
+        """Test incoming and outgoing invoices are declared as such"""
+        self._attach_to_move()
+        for move_type, expected in (("out_invoice", "2"), ("in_invoice", "1")):
+            self.move.move_type = move_type
+            root = etree.fromstring(self.wizard._get_document_xml(self.move))
+            document = root.find("d:content/d:document", {"d": DOCUMENT_XML_NAMESPACE})
+            self.assertEqual(document.get("type"), expected)
+
+    def test_attachments_inactive(self):
+        """Test attachments aren't exported unless requested"""
+        self._attach_to_move()
+        self.move.action_post()
+        self.wizard.journal_ids = self.journal
+        self.wizard.action_generate()
+        self.assertNotIn("BEDI", self._get_booking_row())
+        self.assertFalse(self.wizard.attachment_file_data)
+
+    def test_attachments_none_available(self):
+        """Test a move without attachment has no link, and we create no archive"""
+        self.move.action_post()
+        self.wizard.export_attachments = True
+        self.wizard.journal_ids = self.journal
+        self.wizard.action_generate()
+        self.assertNotIn("BEDI", self._get_booking_row())
+        self.assertFalse(self.wizard.attachment_file_data)
+
+    def test_attachments_limit(self):
+        """Test we refuse an archive DATEV wouldn't accept"""
+        self._attach_to_move()
+        self.move.action_post()
+        self.wizard.export_attachments = True
+        self.wizard.journal_ids = self.journal
+        with (
+            patch(f"{DATEV_EXPORT_MODULE}.DOCUMENT_XML_MAX_DOCUMENTS", 0),
+            self.assertRaises(UserError),
+        ):
+            self.wizard.action_generate()
 
     def test_nonautomatic_flag(self):
         """Test setting BU-Schlussel 40 works as it should"""
