@@ -2,11 +2,9 @@ This module extends the *German VAT Statement* module
 (Umsatzsteuervoranmeldung), by adding the statement for the
 *Intra-Community transactions declaration* (Zusammenfassende Meldung).
 
-This report is based on the line *Steuerfr. Umsätze mit Vorsteuerabz.
-innerg. Lieferungen (§4 Nr. 1b) an Abnehmer mit USt-ID (41)* and *Nicht
-steuerb. sonst. Leist. gem. § 18b S. 1 Nr. 2 (21)* of the German VAT
-Statement report. The period is also the same as the one selected in the
-VAT statement report.
+This report is based on the Kennzahlen 41 (innergemeinschaftliche
+Lieferungen an Abnehmer mit USt-IdNr.) and 21 (nicht steuerbare sonstige
+Leistungen) of the German VAT Statement, for the same period.
 
 This additional VAT declaration report includes:
 
@@ -15,6 +13,5 @@ This additional VAT declaration report includes:
   customer during the selected period
 - The values for product deliveries and services are separated in two
   columns.
-- If you want to transmit the values to the official report form, f.e.
-  by "www.elster.de" you would have to enter two lines if both columns
-  product + services contains values.
+- *Download ZM* creates the CSV file for the upload to ELSTER, with
+  separate lines for products and services.
